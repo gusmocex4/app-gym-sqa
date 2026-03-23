@@ -1,0 +1,88 @@
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+
+.contenedor-login{
+    background-color: v.$gris;
+    height: 100vh;
+    text-align: center;
+    .login-img{
+        padding-top: 3rem;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        img{
+            width: 8%;
+        }
+    }
+
+    .login-texto{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        h2 {
+            color: v.$blanco;
+            font-weight: 100;
+            font-size: 6rem;
+            text-align: justify;
+        }
+        p{
+            margin: 0 0 5rem 0;
+            color: v.$blanco;
+            font-size: 1.7rem;
+            font-weight: 100;
+            text-align: justify;
+        }
+    }
+}
+.campo{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .input {
+        width: 30rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: .1rem solid v.$grisClaro;
+        border-radius: .5rem;
+        box-sizing: border-box;
+        background-color: v.$grisClaro;
+    }
+
+}
+
+.acciones{
+    padding: 1rem 0 5rem 0;
+    a{
+        padding: 0 1rem 0 1rem;
+        color: v.$blanco;
+        font-size: 1.5rem;
+        &:hover,
+        &.active {
+            color: v.$verde;
+        }
+    }
+    
+}
+
+
+.custom-shape-divider-bottom-1715546857 {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+}
+
+.custom-shape-divider-bottom-1715546857 svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 154px;
+}
+
+.custom-shape-divider-bottom-1715546857 .shape-fill {
+    fill: v.$verde;
+}

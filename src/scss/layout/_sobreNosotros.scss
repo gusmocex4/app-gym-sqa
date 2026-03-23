@@ -1,0 +1,18 @@
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+
+.sobreNosotros{
+    display: grid;
+    grid-template-columns: repeat(2,1fr);  
+    width: 100%;
+}
+.sn-texto{
+    padding: 10.5rem;
+    background-color: v.$blanco;
+}
+
+.sn-texto h2, p{
+    color: v.$gris;
+    text-align: justify;
+}
+

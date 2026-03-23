@@ -1,0 +1,53 @@
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+
+.contacto{
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    background-color: v.$blanco;
+}
+
+.mapa{
+    width: 100%;
+}
+
+.cont-form{
+    width: 100%;
+    padding-left: 5rem;
+    margin-top: 2.5rem;
+}
+
+.form{
+    width: 60%;
+    margin-left: 2rem;
+}
+
+.input {
+    width: 100%;
+    padding: .8rem;
+    margin-bottom: 1rem;
+    border: .1rem solid #ccc;
+    border-radius: .5rem;
+    box-sizing: border-box;
+    background-color: v.$blanco;
+}
+
+.error_message {
+    color: red;
+    font-size: 1.4rem;
+}
+
+#submit_button {
+    background-color: v.$verde; 
+    color: v.$blanco;
+    border: none;
+    border-radius: 2rem;
+    padding: 1rem 2rem;
+    cursor: pointer;
+}
+
+#submit_button:hover {
+    background-color: v.$verdeOscuro; 
+}
+

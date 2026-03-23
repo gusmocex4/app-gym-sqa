@@ -1,0 +1,43 @@
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+
+.servicios{
+    width: 100%;
+}
+
+.s-texto{
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    p, h4{
+        color: v.$blanco;
+        font-weight: 200;
+    }
+    p{
+        font-size: 1.5rem;
+        text-align: justify;
+    }
+    h4{
+        text-align: center;
+    }
+}
+
+.entrenamiento, .nutricion, .clases, .cardio{
+    padding: 3.5rem;
+    text-align: center;
+}
+
+.entrenamiento{
+    background-color: v.$grisOscuro;
+}
+.nutricion, .cardio{
+    background-color: v.$grisClaro;
+}
+.clases{
+    background-color: v.$verdeOscuro;
+}
+
+span{
+    color: v.$blanco;
+    display: inline-block;
+    size: 8rem;
+}

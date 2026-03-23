@@ -1,0 +1,19 @@
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+
+.foot{
+    background-color: v.$verde;
+    width: 100%;
+    height: 6rem;
+    display: flex;
+    align-items: center;
+
+    p{
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        color: v.$blanco;
+        text-align: center;
+    }
+}
+
