@@ -9,4 +9,16 @@ class InicioUserController{
         $router->render('auth/inicio-user');
     }
 
+    public static function planes(Router $router){
+        $router->render('auth/inicio-user');
+    }
+
+    public static function suscripciones(Router $router){
+        $router->render('auth/inicio-user');
+    }
+
+    public static function clases(Router $router){
+        $router->render('auth/inicio-user');
+    }
+
 }

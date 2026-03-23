@@ -19,8 +19,8 @@ class LoginController{
                 if ($usuario){
                     //autenticar sesion
                     if ($usuario->verificarPassword($auth->password)){
-
-                        session_start();
+                        
+                        // session_start();
 
                         $_SESSION['id'] = $usuario->id;
                         $_SESSION['nombre'] = $usuario->nombre . " " . $usuario->nombre;
@@ -30,10 +30,10 @@ class LoginController{
                         //redireccionamiento
                         if($usuario->admin==="1"){
                             $_SESSION['admin'] = $usuario->admin ?? null;
-                            header('Location: inicio-admin');
+                            header('Location: /inicio-admin');
                         }
                         else{
-                            header('Location: inicio-user');
+                            header('Location: /inicio-user');
                         }
                         
                     }

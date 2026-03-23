@@ -37,10 +37,15 @@ $router->post('/crear-cuenta',[LoginController::class, 'crearCuenta']);
 //Pagina inicio admin
 
 $router->get('/inicio-admin',[InicioAdminController::class, 'inicioAdmin']);
+$router->get('/administrarPlanes',[InicioAdminController::class, 'administrarPlanes']);
+$router->get('/administrarClases',[InicioAdminController::class, 'administrarClases']);
 
 //Pagina inicio usuario
 
 $router->get('/inicio-user',[InicioUserController::class, 'inicioUser']);
+$router->get('/Planes',[InicioUserController::class, 'planes']);
+$router->get('/Suscripciones',[InicioUserController::class, 'suscripciones']);
+$router->get('/Clases',[InicioUserController::class, 'clases']);
 
 // Comprueba y valida las rutas, que existan y les asigna las funciones del Controlador
 $router->comprobarRutas();
