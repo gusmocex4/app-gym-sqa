@@ -4,13 +4,19 @@ FROM php:8.2-apache
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
+    libssl-dev \
     libxml2-dev \
     libzip-dev \
+    pkg-config \
     zip \
     unzip \
     git \
     curl \
-    && docker-php-ext-install pdo_mysql mysqli gd zip
+    && docker-php-ext-install gd zip \
+    && pecl install mongodb \
+    && docker-php-ext-enable mongodb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Enable mod_rewrite
 RUN a2enmod rewrite

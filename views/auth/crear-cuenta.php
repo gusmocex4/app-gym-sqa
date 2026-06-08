@@ -13,15 +13,15 @@
     <form class="formulario" method="POST" action="/crear-cuenta">
         <div class="campo">
             <label for="nombre"></label>
-            <input class="input" type="text" id="nombre" placeholder="Nombre" name="nombre" ">
+            <input class="input" type="text" id="nombre" placeholder="Nombre" name="nombre" value="<?php echo s($usuario->nombre ?? ''); ?>">
         </div>
         <div class="campo">
             <label for="apellido"></label>
-            <input class="input" type="text" id="apellido" placeholder="Apellido" name="apellido">
+            <input class="input" type="text" id="apellido" placeholder="Apellido" name="apellido" value="<?php echo s($usuario->apellido ?? ''); ?>">
         </div>
         <div class="campo">
             <label for="email"></label>
-            <input class="input" type="email" id="email" placeholder="Email" name="email">
+            <input class="input" type="email" id="email" placeholder="Email" name="email" value="<?php echo s($usuario->email ?? ''); ?>">
         </div>
         <div class="campo">
             <label for="password"></label>

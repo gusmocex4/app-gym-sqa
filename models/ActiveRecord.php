@@ -1,33 +1,28 @@
 <?php
+
 namespace Model;
+
+use MongoDB\Driver\BulkWrite;
+use MongoDB\Driver\Exception\Exception as MongoDBException;
+use MongoDB\Driver\Manager;
+use MongoDB\Driver\Query;
+
 class ActiveRecord {
 
-    // Base DE DATOS
     protected static $db;
-    protected static $tabla = '';
-    protected static $columnasDB = [];
-
-    // Alertas y Mensajes
+    protected static $databaseName = '';
+    protected static $collection = '';
     protected static $alertas = [];
 
-        // Busca un registro por su id
-    public static function where($columna, $valor) {
-        $query = "SELECT * FROM " . static::$tabla  ." WHERE {$columna} = '{$valor}'";
-        $resultado = self::consultarSQL($query);
-        return array_shift( $resultado ) ;
-    }
-    
-    
-    // Definir la conexión a la BD - includes/database.php
-    public static function setDB($database) {
+    public static function setDB(?Manager $database, string $databaseName) {
         self::$db = $database;
+        self::$databaseName = $databaseName;
     }
 
     public static function setAlerta($tipo, $mensaje) {
         static::$alertas[$tipo][] = $mensaje;
     }
 
-    // Validación
     public static function getAlertas() {
         return static::$alertas;
     }
@@ -37,30 +32,65 @@ class ActiveRecord {
         return static::$alertas;
     }
 
-    // Consulta SQL para crear un objeto en Memoria
-    public static function consultarSQL($query) {
-        // Consultar la base de datos
-        $resultado = self::$db->query($query);
-
-        // Iterar los resultados
-        $array = [];
-        while($registro = $resultado->fetch_assoc()) {
-            $array[] = static::crearObjeto($registro);
+    public function sincronizar(array $args = []) {
+        foreach ($args as $key => $value) {
+            if (property_exists($this, $key)) {
+                $this->$key = $value;
+            }
         }
-
-        // liberar la memoria
-        $resultado->free();
-
-        // retornar los resultados
-        return $array;
     }
 
-    // Crea el objeto en memoria que es igual al de la BD
-    protected static function crearObjeto($registro) {
+    public static function where($campo, $valor) {
+        $resultado = static::consultarDocumentos([$campo => $valor], ['limit' => 1]);
+        return array_shift($resultado);
+    }
+
+    public static function all() {
+        return static::consultarDocumentos();
+    }
+
+    public static function find($id) {
+        $resultado = static::consultarDocumentos(['_id' => (string) $id], ['limit' => 1]);
+        return array_shift($resultado);
+    }
+
+    public static function get($limite) {
+        return static::consultarDocumentos([], ['limit' => (int) $limite]);
+    }
+
+    protected static function consultarDocumentos(array $filter = [], array $options = []) {
+        if (!self::$db) {
+            static::setAlerta('error', 'La base de datos no esta disponible.');
+            return [];
+        }
+
+        $query = new Query($filter, array_merge([
+            'typeMap' => [
+                'root' => 'array',
+                'document' => 'array'
+            ]
+        ], $options));
+
+        try {
+            $cursor = self::$db->executeQuery(static::collectionNamespace(), $query);
+        } catch (MongoDBException $e) {
+            static::setAlerta('error', 'No se pudo consultar la base de datos.');
+            return [];
+        }
+
+        $documentos = [];
+        foreach ($cursor as $documento) {
+            $documentos[] = static::crearObjeto((array) $documento);
+        }
+
+        return $documentos;
+    }
+
+    protected static function crearObjeto(array $registro) {
         $objeto = new static;
 
-        foreach($registro as $key => $value ) {
-            if(property_exists( $objeto, $key  )) {
+        foreach (static::mapearDocumento($registro) as $key => $value) {
+            if (property_exists($objeto, $key)) {
                 $objeto->$key = $value;
             }
         }
@@ -68,116 +98,112 @@ class ActiveRecord {
         return $objeto;
     }
 
-    // Identificar y unir los atributos de la BD
-    public function atributos() {
-        $atributos = [];
-        foreach(static::$columnasDB as $columna) {
-            if($columna === 'id') continue;
-            $atributos[$columna] = $this->$columna;
+    protected static function mapearDocumento(array $registro): array {
+        if (isset($registro['_id'])) {
+            $registro['id'] = (string) $registro['_id'];
+            unset($registro['_id']);
         }
-        return $atributos;
+
+        return $registro;
     }
 
-    // Sanitizar los datos antes de guardarlos en la BD
-    public function sanitizarAtributos() {
-        $atributos = $this->atributos();
-        $sanitizado = [];
-        foreach($atributos as $key => $value ) {
-            $sanitizado[$key] = self::$db->escape_string($value);
-        }
-        return $sanitizado;
+    protected function atributos(): array {
+        return [];
     }
 
-    // Sincroniza BD con Objetos en memoria
-    public function sincronizar($args=[]) { 
-        foreach($args as $key => $value) {
-          if(property_exists($this, $key) && !is_null($value)) {
-            $this->$key = $value;
-          }
-        }
-    }
-
-    // Registros - CRUD
     public function guardar() {
-        $resultado = '';
-        if(!is_null($this->id)) {
-            // actualizar
-            $resultado = $this->actualizar();
-        } else {
-            // Creando un nuevo registro
-            $resultado = $this->crear();
-        }
-        return $resultado;
-    }
-
-    // Todos los registros
-    public static function all() {
-        $query = "SELECT * FROM " . static::$tabla;
-        $resultado = self::consultarSQL($query);
-        return $resultado;
-    }
-
-    // Busca un registro por su id
-    public static function find($id) {
-        $query = "SELECT * FROM " . static::$tabla  ." WHERE id = {$id}";
-        $resultado = self::consultarSQL($query);
-        return array_shift( $resultado ) ;
-    }
-
-    // Obtener Registros con cierta cantidad
-    public static function get($limite) {
-        $query = "SELECT * FROM " . static::$tabla . " LIMIT {$limite}";
-        $resultado = self::consultarSQL($query);
-        return array_shift( $resultado ) ;
-    }
-
-    // crea un nuevo registro
-    public function crear() {
-        // Sanitizar los datos
-        $atributos = $this->sanitizarAtributos();
-
-        // Insertar en la base de datos
-        $query = " INSERT INTO " . static::$tabla . " ( ";
-        $query .= join(', ', array_keys($atributos));
-        $query .= " ) VALUES (' "; 
-        $query .= join("', '", array_values($atributos));
-        $query .= " ') ";
-
-        // Resultado de la consulta
-        $resultado = self::$db->query($query);
-        return [
-           'resultado' =>  $resultado,
-           'id' => self::$db->insert_id
-        ];
-    }
-
-    // Actualizar el registro
-    public function actualizar() {
-        // Sanitizar los datos
-        $atributos = $this->sanitizarAtributos();
-
-        // Iterar para ir agregando cada campo de la BD
-        $valores = [];
-        foreach($atributos as $key => $value) {
-            $valores[] = "{$key}='{$value}'";
+        if (!is_null($this->id) && $this->id !== '') {
+            return $this->actualizar();
         }
 
-        // Consulta SQL
-        $query = "UPDATE " . static::$tabla ." SET ";
-        $query .=  join(', ', $valores );
-        $query .= " WHERE id = '" . self::$db->escape_string($this->id) . "' ";
-        $query .= " LIMIT 1 "; 
-
-        // Actualizar BD
-        $resultado = self::$db->query($query);
-        return $resultado;
+        return $this->crear();
     }
 
-    // Eliminar un Registro por su ID
+    protected function documentoPersistente(): array {
+        return $this->atributos();
+    }
+
+    protected function crear() {
+        if (!self::$db) {
+            static::setAlerta('error', 'La base de datos no esta disponible.');
+
+            return [
+                'resultado' => false,
+                'id' => null
+            ];
+        }
+
+        $documento = $this->documentoPersistente();
+        $id = $this->id ?: bin2hex(random_bytes(12));
+
+        $documento['_id'] = $id;
+
+        $bulk = new BulkWrite();
+        $bulk->insert($documento);
+
+        try {
+            self::$db->executeBulkWrite(static::collectionNamespace(), $bulk);
+            $this->id = $id;
+
+            return [
+                'resultado' => true,
+                'id' => $id
+            ];
+        } catch (MongoDBException $e) {
+            static::setAlerta('error', 'No se pudo guardar el registro.');
+
+            return [
+                'resultado' => false,
+                'id' => null
+            ];
+        }
+    }
+
+    protected function actualizar() {
+        if (!self::$db) {
+            static::setAlerta('error', 'La base de datos no esta disponible.');
+            return false;
+        }
+
+        $bulk = new BulkWrite();
+        $bulk->update(
+            ['_id' => (string) $this->id],
+            ['$set' => $this->documentoPersistente()],
+            ['multi' => false, 'upsert' => false]
+        );
+
+        try {
+            self::$db->executeBulkWrite(static::collectionNamespace(), $bulk);
+            return true;
+        } catch (MongoDBException $e) {
+            static::setAlerta('error', 'No se pudo actualizar el registro.');
+            return false;
+        }
+    }
+
     public function eliminar() {
-        $query = "DELETE FROM "  . static::$tabla . " WHERE id = " . self::$db->escape_string($this->id) . " LIMIT 1";
-        $resultado = self::$db->query($query);
-        return $resultado;
+        if (!self::$db) {
+            static::setAlerta('error', 'La base de datos no esta disponible.');
+            return false;
+        }
+
+        $bulk = new BulkWrite();
+        $bulk->delete(['_id' => (string) $this->id], ['limit' => 1]);
+
+        try {
+            self::$db->executeBulkWrite(static::collectionNamespace(), $bulk);
+            return true;
+        } catch (MongoDBException $e) {
+            static::setAlerta('error', 'No se pudo eliminar el registro.');
+            return false;
+        }
     }
 
+    protected static function collectionNamespace(): string {
+        return self::$databaseName . '.' . static::collectionName();
+    }
+
+    protected static function collectionName(): string {
+        return static::$collection;
+    }
 }

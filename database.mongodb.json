@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "admin-user-000000000001",
+    "nombre": "Admin",
+    "apellido": "User",
+    "email": "admin@example.com",
+    "password": "$2y$10$d2OJYL0yPRhJ1fIXcZsX3.33JLt4.H25R59aYTVmthKK5CJAkvKW6",
+    "token": "",
+    "admin": 1
+  },
+  {
+    "_id": "normal-user-00000000001",
+    "nombre": "Normal",
+    "apellido": "User",
+    "email": "user@example.com",
+    "password": "$2y$10$xovVQxoOrbGDazMVwT6Q7OcyrCX4gLVEO7Qm2etWV0JUrN3JHNYc.",
+    "token": "",
+    "admin": 0
+  }
+]

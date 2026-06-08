@@ -5,10 +5,15 @@
     <div class="login-texto">
         <h2>Olvidé mi contraseña</h2>
     </div>
+
+    <?php
+        include_once __DIR__ . "/../templates/alertas.php"
+    ?>
+
     <form class="formulario" method="POST" action="/olvide">
         <div class="campo">
             <label for="email"></label>
-            <input class="input" type="email" id="email" placeholder="Email">
+            <input class="input" type="email" id="email" name="email" placeholder="Email">
         </div>
         <input class="button" id="submit_button" type="submit" value="Envíar instrucciones" />
     </form>

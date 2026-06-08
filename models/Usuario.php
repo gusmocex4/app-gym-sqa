@@ -3,9 +3,7 @@
 namespace Model;
 
 class Usuario extends ActiveRecord{
-    //base de datos
-    protected static $tabla = 'usuarios';
-    protected static $columnasDB = ['id', 'nombre', 'apellido', 'email', 'admin', 'token', 'password'];
+    protected static $collection = 'usuarios';
 
     public $id;
     public $nombre;
@@ -21,7 +19,7 @@ class Usuario extends ActiveRecord{
         $this->nombre = $args['nombre'] ?? '';
         $this->apellido = $args['apellido'] ?? '';
         $this->email = $args['email'] ?? '';
-        $this->admin = $args['admin'] ?? 0;
+        $this->admin = (int) ($args['admin'] ?? 0);
         $this->token = $args['token'] ?? '';
         $this->password = $args['password'] ?? '';
     }
@@ -48,16 +46,12 @@ class Usuario extends ActiveRecord{
     //validar que el usuario no este registrado
 
     public function existeUsuario(){
-        $query = " SELECT * FROM " . self::$tabla . " WHERE email = '" . $this->email . "' LIMIT 1";
+        $resultado = self::where('email', $this->email);
 
-        $resultado=self::$db->query($query);
-
-        if ($resultado->num_rows){
+        if ($resultado){
             self::$alertas['error'][]='El usuario ya está registrado';
         }
         return $resultado;
-
-        debuguear($resultado); 
     }
 
     public function verificarPassword($password){
@@ -73,6 +67,18 @@ class Usuario extends ActiveRecord{
         $this->token= uniqid();
     }
 
-    
-    
+    protected function atributos(): array {
+        return [
+            'nombre' => $this->nombre,
+            'apellido' => $this->apellido,
+            'email' => $this->email,
+            'admin' => (int) $this->admin,
+            'token' => $this->token,
+            'password' => $this->password
+        ];
+    }
+
+    protected static function collectionName(): string {
+        return getenv('MONGODB_USERS_COLLECTION') ?: static::$collection;
+    }
 }

@@ -1,13 +1,8 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: ${APP_IMAGE:-appgym-app}
+    image: ${ACR_LOGIN_SERVER}/${APP_IMAGE_NAME:-appgym-app}:${IMAGE_TAG:-latest}
     ports:
       - "8080:80"
-    volumes:
-      - .:/var/www/html
     environment:
       - MONGODB_URI=${MONGODB_URI}
       - MONGODB_DATABASE=${MONGODB_DATABASE:-appgym}

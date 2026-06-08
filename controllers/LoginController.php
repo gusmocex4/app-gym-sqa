@@ -23,17 +23,19 @@ class LoginController{
                         // session_start();
 
                         $_SESSION['id'] = $usuario->id;
-                        $_SESSION['nombre'] = $usuario->nombre . " " . $usuario->nombre;
+                        $_SESSION['nombre'] = $usuario->nombre . " " . $usuario->apellido;
                         $_SESSION['email'] = $usuario->email;
                         $_SESSION['login'] = true;
 
                         //redireccionamiento
-                        if($usuario->admin==="1"){
+                        if($usuario->admin === 1){
                             $_SESSION['admin'] = $usuario->admin ?? null;
                             header('Location: /inicio-admin');
+                            exit;
                         }
                         else{
                             header('Location: /inicio-user');
+                            exit;
                         }
                         
                     }
@@ -55,12 +57,27 @@ class LoginController{
     }
 
     public static function logout(){
-        echo "Desde Logout";
+        if(session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        $_SESSION = [];
+        session_destroy();
+
+        header('Location: /');
+        exit;
     }
 
     public static function olvide(Router $router){
-        $router->render('auth/olvide-password',[
+        $alertas = [];
 
+        if($_SERVER['REQUEST_METHOD'] === 'POST'){
+            Usuario::setAlerta('error', 'La recuperacion de password aun no esta implementada.');
+            $alertas = Usuario::getAlertas();
+        }
+
+        $router->render('auth/olvide-password',[
+            'alertas' => $alertas
         ]);
     }
 
@@ -71,38 +88,42 @@ class LoginController{
     public static function crearCuenta(Router $router){
         $usuario = new Usuario;
 
-        $alertas=[];  
+        $alertas=[];
         if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
             $usuario->sincronizar($_POST);
             $alertas= $usuario->validarNuevaCuenta();
-        }
 
-        if(empty($alertas)){
-            $resultado = $usuario->existeUsuario();
+            if(empty($alertas)){
+                $resultado = $usuario->existeUsuario();
 
-            if ($resultado->num_rows){
-                $alertas = Usuario::getAlertas();
-            }
-            else{
-                //hashear clave
-                $usuario->hashPassword();
+                if ($resultado){
+                    $alertas = Usuario::getAlertas();
+                }
+                else{
+                    //hashear clave
+                    $usuario->hashPassword();
 
-                //generar token
-                $usuario->crearToken();
+                    //generar token
+                    $usuario->crearToken();
 
-                //aqui falta
+                    //crear el usuario
+                    $resultado = $usuario->guardar();
 
-                //crear el usuario 
-                $resultado = $usuario->guardar();
+                    if($resultado['resultado']){
+                        header('Location: /login');
+                        exit;
+                    }
 
-                //debuguear($usuario);
+                    Usuario::setAlerta('error', 'No se pudo crear la cuenta.');
+                    $alertas = Usuario::getAlertas();
+                }
             }
         }
 
         $router->render('auth/crear-cuenta',[
-             'usuario' => $usuario,
-             'alertas' => $alertas
+            'usuario' => $usuario,
+            'alertas' => $alertas
         ]);
     }
 }
