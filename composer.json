@@ -7,7 +7,14 @@
             "MVC\\": "./",
             "Controllers\\": "./controllers",
             "Model\\": "./models"
-        }
+        },
+        "exclude-from-classmap": [
+            "/tests/"
+        ]
+    },
+    "scripts": {
+        "test:unit": "php tests/unit/run.php",
+        "test:integration": "php tests/integration/run.php"
     },
     "authors": [
         {
