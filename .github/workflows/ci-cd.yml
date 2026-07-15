@@ -43,6 +43,9 @@ jobs:
       - name: Lint PHP files
         run: find . -path ./vendor -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
 
+      - name: Run unit tests
+        run: composer test:unit
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -70,6 +73,13 @@ jobs:
 
       - name: Seed test users
         run: docker compose -f docker-compose.test.yml exec -T mongo mongoimport --db appgym --collection usuarios --drop --file /seed/database.mongodb.json --jsonArray
+
+      - name: Run integration tests
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27017
+          MONGODB_DATABASE: appgym_test
+          MONGODB_USERS_COLLECTION: usuarios_integracion
+        run: composer test:integration
 
       - name: Wait for app
         run: |
