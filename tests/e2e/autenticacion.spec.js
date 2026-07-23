@@ -1,5 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
+// Evidencia demo: este archivo dispara el pipeline de GitHub Actions para SCRUM-146.
 const datosPrueba = {
   usuarioNoRegistrado: {
     email: 'noexiste@test.com',
